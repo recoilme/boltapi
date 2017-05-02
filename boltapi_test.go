@@ -19,6 +19,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path[1:]
 	switch {
 	case strings.HasPrefix(path, baseuri):
+		//if you install as package use boltapi prefix
+		//boltapi.BoltAPI(boltdb, w, r)
 		BoltAPI(boltdb, w, r)
 	default:
 		w.WriteHeader(http.StatusOK)
