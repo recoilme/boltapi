@@ -162,7 +162,7 @@ func BoltAPI(db *bolt.DB, w http.ResponseWriter, r *http.Request) {
 			}
 			i := 0
 			fmt.Println(keystr)
-			buffer.WriteString("{")
+			buffer.WriteString("[")
 			switch order {
 			case "asc":
 				for k, v := c.Seek([]byte(keystr)); k != nil && comp(i, max, k); k, v = c.Next() {
@@ -172,7 +172,7 @@ func BoltAPI(db *bolt.DB, w http.ResponseWriter, r *http.Request) {
 					if vals == "false" {
 						buffer.WriteString(fmt.Sprintf("\"%s\"", k))
 					} else {
-						buffer.WriteString(fmt.Sprintf("\"%s\":\"%s\"", k, v))
+						buffer.WriteString(fmt.Sprintf("{\"%s\":\"%s\"}", k, v))
 					}
 					i++
 				}
@@ -184,13 +184,13 @@ func BoltAPI(db *bolt.DB, w http.ResponseWriter, r *http.Request) {
 					if vals == "false" {
 						buffer.WriteString(fmt.Sprintf("\"%s\"", k))
 					} else {
-						buffer.WriteString(fmt.Sprintf("\"%s\":\"%s\"", k, v))
+						buffer.WriteString(fmt.Sprintf("{\"%s\":\"%s\"}", k, v))
 					}
 					i++
 				}
 
 			}
-			buffer.WriteString("}")
+			buffer.WriteString("]")
 			w.Write(buffer.Bytes())
 			return nil
 		})
