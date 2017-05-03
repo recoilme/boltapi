@@ -174,7 +174,7 @@ func BoltAPI(db *bolt.DB, w http.ResponseWriter, r *http.Request) {
 					if vals == "false" {
 						buffer.WriteString(fmt.Sprintf("\"%s\"", k))
 					} else {
-						buffer.WriteString(fmt.Sprintf("\"%s\":\"%s\"", k, v))
+						buffer.WriteString(fmt.Sprintf("\"%s\":%s", k, v))
 					}
 					i++
 				}
@@ -186,7 +186,7 @@ func BoltAPI(db *bolt.DB, w http.ResponseWriter, r *http.Request) {
 					if vals == "false" {
 						buffer.WriteString(fmt.Sprintf("\"%s\"", k))
 					} else {
-						buffer.WriteString(fmt.Sprintf("\"%s\":\"%s\"", k, v))
+						buffer.WriteString(fmt.Sprintf("\"%s\":%s", k, v))
 					}
 					i++
 				}
