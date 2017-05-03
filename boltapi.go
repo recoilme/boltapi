@@ -163,8 +163,7 @@ func BoltAPI(db *bolt.DB, w http.ResponseWriter, r *http.Request) {
 				return i < m
 			}
 			i := 0
-			//log.Println("keystr", keystr)
-			buffer.WriteString("{")
+			buffer.WriteString("[")
 			switch order {
 			case "asc":
 				for k, v := c.Seek([]byte(keystr)); k != nil && comp(i, max, k); k, v = c.Next() {
@@ -192,7 +191,7 @@ func BoltAPI(db *bolt.DB, w http.ResponseWriter, r *http.Request) {
 				}
 
 			}
-			buffer.WriteString("}")
+			buffer.WriteString("]")
 			w.Write(buffer.Bytes())
 			return nil
 		})
