@@ -72,13 +72,16 @@ func BoltAPI(db *bolt.DB, w http.ResponseWriter, r *http.Request) {
 	urlPart := strings.Split(r.URL.Path, "/")
 	var bucketstr = ""
 	var keystr = ""
-	if len(urlPart) > 2 {
-		bucketstr = urlPart[len(urlPart)-1]
+	//log.Println("len", len(urlPart))
+	if len(urlPart) == 4 {
+		bucketstr = urlPart[2]
+		keystr = urlPart[3]
 	}
-	if len(urlPart) > 3 {
-		keystr = urlPart[len(urlPart)-2]
+	if len(urlPart) == 3 {
+		bucketstr = urlPart[2]
 	}
-
+	//log.Println("bucketstr", bucketstr)
+	//log.Println("keystr", keystr)
 	switch method {
 	case "GET":
 		db.View(func(tx *bolt.Tx) error {
@@ -117,6 +120,7 @@ func BoltAPI(db *bolt.DB, w http.ResponseWriter, r *http.Request) {
 		}
 
 	case "POST":
+		//log.Println("POST")
 		cnt := r.URL.Query().Get("cnt")
 		var order = r.URL.Query().Get("order")
 		var vals = r.URL.Query().Get("vals")
@@ -126,7 +130,6 @@ func BoltAPI(db *bolt.DB, w http.ResponseWriter, r *http.Request) {
 		if e == nil {
 			max = m
 		}
-
 		var buffer bytes.Buffer
 		db.View(func(tx *bolt.Tx) error {
 			b := tx.Bucket([]byte(bucketstr))
@@ -135,7 +138,6 @@ func BoltAPI(db *bolt.DB, w http.ResponseWriter, r *http.Request) {
 				return nil
 			}
 			c := b.Cursor()
-
 			if keystr == "Last" || keystr == "" {
 				k, _ := c.Last()
 				keystr = string(k)
@@ -161,7 +163,6 @@ func BoltAPI(db *bolt.DB, w http.ResponseWriter, r *http.Request) {
 				return i < m
 			}
 			i := 0
-			fmt.Println(keystr)
 			buffer.WriteString("[")
 			switch order {
 			case "asc":
