@@ -57,7 +57,6 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -85,18 +84,29 @@ func BoltAPI(db *bolt.DB, w http.ResponseWriter, r *http.Request) {
 	switch method {
 	case "GET":
 		db.View(func(tx *bolt.Tx) error {
-			b := tx.Bucket([]byte(bucketstr))
-			if b == nil {
-				w.WriteHeader(http.StatusNotFound)
+			if bucketstr == "backup" {
+				w.Header().Set("Content-Type", "application/octet-stream")
+				w.Header().Set("Content-Disposition", `attachment; filename="my.db"`)
+				w.Header().Set("Content-Length", strconv.FormatInt(int64(tx.Size()), 10))
+				_, err := tx.WriteTo(w)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+				return nil
+			} else {
+				b := tx.Bucket([]byte(bucketstr))
+				if b == nil {
+					w.WriteHeader(http.StatusNotFound)
+					return nil
+				}
+				val := b.Get([]byte(keystr))
+				if len(val) == 0 {
+					w.WriteHeader(http.StatusNotFound)
+				} else {
+					w.Write(val)
+				}
 				return nil
 			}
-			val := b.Get([]byte(keystr))
-			if len(val) == 0 {
-				w.WriteHeader(http.StatusNotFound)
-			} else {
-				w.Write(val)
-			}
-			return nil
 		})
 
 	case "PUT":
@@ -116,7 +126,7 @@ func BoltAPI(db *bolt.DB, w http.ResponseWriter, r *http.Request) {
 			return nil
 		})
 		if err != nil {
-			log.Println(err)
+			//log.Println(err)
 		}
 
 	case "POST":
@@ -124,7 +134,7 @@ func BoltAPI(db *bolt.DB, w http.ResponseWriter, r *http.Request) {
 		cnt := r.URL.Query().Get("cnt")
 		var order = r.URL.Query().Get("order")
 		var vals = r.URL.Query().Get("vals")
-		var max = 1000
+		var max = 100000
 		var prefix []byte
 		m, e := strconv.Atoi(cnt)
 		if e == nil {
@@ -173,7 +183,7 @@ func BoltAPI(db *bolt.DB, w http.ResponseWriter, r *http.Request) {
 					if vals == "false" {
 						buffer.WriteString(fmt.Sprintf("\"%s\"", k))
 					} else {
-						buffer.WriteString(fmt.Sprintf("\"%s\":%s", k, v))
+						buffer.WriteString(fmt.Sprintf("{\"%s\":\"%s\"}", k, v))
 					}
 					i++
 				}
@@ -185,7 +195,7 @@ func BoltAPI(db *bolt.DB, w http.ResponseWriter, r *http.Request) {
 					if vals == "false" {
 						buffer.WriteString(fmt.Sprintf("\"%s\"", k))
 					} else {
-						buffer.WriteString(fmt.Sprintf("\"%s\":%s", k, v))
+						buffer.WriteString(fmt.Sprintf("{\"%s\":\"%s\"}", k, v))
 					}
 					i++
 				}
